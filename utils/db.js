@@ -1,3 +1,5 @@
+// utils/db.js
+
 import { MongoClient } from 'mongodb';
 
 class DBClient {
@@ -5,35 +7,35 @@ class DBClient {
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
-    const url = `mongodb://${host}:${port}`;
+
+    const url = `mongodb://${host}:${port}/${database}`;
 
     this.client = new MongoClient(url, { useUnifiedTopology: true });
-    this.isConnected = false;
 
-    this.client.connect()
-      .then(() => {
-        this.db = this.client.db(database);
-        this.isConnected = true;
+    this.client.connect((err) => {
+      if (err) {
+        console.error('Error connecting to MongoDB:', err);
+      } else {
         console.log('Connected to MongoDB');
-      })
-      .catch((err) => {
-        console.error('Failed to connect to MongoDB', err);
-        this.isConnected = false;
-      });
+      }
+    });
   }
 
   isAlive() {
-    return this.isConnected;
+    return this.client.isConnected();
   }
 
   async nbUsers() {
-    return this.db.collection('users').countDocuments();
+    const usersCollection = this.client.db().collection('users');
+    return usersCollection.countDocuments();
   }
 
   async nbFiles() {
-    return this.db.collection('files').countDocuments();
+    const filesCollection = this.client.db().collection('files');
+    return filesCollection.countDocuments();
   }
 }
 
 const dbClient = new DBClient();
-module.exports = dbClient;
+
+export default dbClient;
