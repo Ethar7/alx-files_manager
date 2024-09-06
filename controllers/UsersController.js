@@ -1,28 +1,21 @@
 // controllers/UsersController.js
-import sha1 from 'sha1';
 import dbClient from '../utils/db';
 
 class UsersController {
-  static async postNew(req, res) {
-    const { email, password } = req.body;
+  static async getMe(req, res) {
+    const token = req.header('X-Token');
+    const userId = await redisClient.get(`auth_${token}`);
 
-    if (!email) {
-      return res.status(400).json({ error: 'Missing email' });
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    if (!password) {
-      return res.status(400).json({ error: 'Missing password' });
+    const user = await dbClient.users.findOne({ _id: dbClient.ObjectId(userId) });
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const existingUser = await dbClient.users.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Already exist' });
-    }
-
-    const hashedPassword = sha1(password);
-    const newUser = await dbClient.users.insertOne({ email, password: hashedPassword });
-
-    return res.status(201).json({ id: newUser.insertedId, email });
+    return res.status(200).json({ id: user._id, email: user.email });
   }
 }
 
