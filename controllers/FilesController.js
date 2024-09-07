@@ -3,8 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types';
 import { ObjectId } from 'mongodb'; // استيراد ObjectId
-import dbClient from '../utils/db.js';
-import redisClient from '../utils/redis.js';
+import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 class FilesController {
   static async postUpload(req, res) {
@@ -21,7 +21,7 @@ class FilesController {
       type,
       parentId = 0,
       isPublic = false,
-      data
+      data,
     } = req.body;
 
     if (!name) {
@@ -60,9 +60,9 @@ class FilesController {
     }
 
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
-      if (!fs.existsSync(folderPath)) {
-        fs.mkdirSync(folderPath, { recursive: true });
-      }
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
 
     const localPath = path.join(folderPath, uuidv4());
     fs.writeFileSync(localPath, Buffer.from(data, 'base64'));
