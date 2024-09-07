@@ -21,9 +21,8 @@ class UsersController {
 
     const hashedPassword = sha1(password);
     const newUser = await dbClient.db.collection('users').insertOne({ email, password: hashedPassword });
-
-      return res.status(201).json({ id: newUser.insertedId, email });
-    }
+    return res.status(201).json({ id: newUser.insertedId, email });
+  }
 }
 
 export default UsersController;
